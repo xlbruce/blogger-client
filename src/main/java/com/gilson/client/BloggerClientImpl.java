@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -23,6 +25,8 @@ import com.google.api.services.blogger.model.Post;
 import model.PostFactory;
 
 public class BloggerClientImpl implements BloggerClient {
+
+    private static final Logger LOG =  Logger.getLogger(BloggerClientImpl.class.getName());
 
     private static final String APPLICATION_NAME = "Blogger API Client";
 
@@ -45,8 +49,9 @@ public class BloggerClientImpl implements BloggerClient {
         try {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
             DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
-        } catch (Throwable t) {
-            t.printStackTrace();
+        } catch (Exception e) {
+            LOG.severe("Could not create http transport");
+            LOG.log(Level.SEVERE, e.getMessage(), e);
             System.exit(1);
         }
 
@@ -70,7 +75,8 @@ public class BloggerClientImpl implements BloggerClient {
                 .setAccessType("offline")
                 .build();
         Credential credential = new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
-        System.out.println("Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
+        LOG.log(Level.INFO, String.format("Credentials saved to %s", DATA_STORE_DIR.getAbsolutePath()));
+
         return credential;
     }
 
@@ -81,8 +87,6 @@ public class BloggerClientImpl implements BloggerClient {
         blogger.posts()
             .insert(blogId, post)
             .execute();
-        
-        System.out.println(String.format("Posted \"%s\" successfully", title));
+        LOG.log(Level.INFO, String.format("Posted [%s] successfully", title));
     }
-
 }

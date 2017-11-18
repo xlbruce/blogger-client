@@ -3,6 +3,8 @@ package com.gilson.service;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.gilson.blogger.ApplicationProperties;
 import com.gilson.client.BloggerClient;
@@ -10,6 +12,8 @@ import com.gilson.client.BloggerClientImpl;
 
 public class BloggerServiceImpl implements BloggerService {
     
+    private static final Logger LOG = Logger.getLogger(BloggerServiceImpl.class.getName());
+
     private BloggerClient bloggerClient;
     
     public BloggerServiceImpl() {
@@ -20,7 +24,8 @@ public class BloggerServiceImpl implements BloggerService {
         try {
             clientSecretStream = new FileInputStream(clientSecret);
         } catch (FileNotFoundException e) {
-            System.err.println("[ERROR] Client secret file not found");
+            LOG.severe("Client secret file not found");
+            System.exit(1);
         }
 
         bloggerClient = new BloggerClientImpl(blogId, clientSecretStream);
@@ -30,8 +35,7 @@ public class BloggerServiceImpl implements BloggerService {
         try {
             bloggerClient.post(title, content);
         } catch (IOException e) {
-            System.err.println("[ERROR] Could not post into Blogger");
-            e.printStackTrace();
+            LOG.log(Level.SEVERE, "IOException occurred", e);
         }
     }
 }
